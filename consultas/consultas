@@ -1,0 +1,92 @@
+-- Ticket Médio por cliente
+SELECT 
+    cliente_id, ROUND(AVG(preco_total)) AS Ticket_Médio
+FROM
+    alugueis
+GROUP BY cliente_id
+ORDER BY Ticket_Médio DESC;
+
+-- Média de estadia por cliente
+SELECT 
+    cliente_id,
+    ROUND(AVG(DATEDIFF(data_fim, data_inicio))) AS media_estadia
+FROM
+    alugueis
+GROUP BY cliente_id
+ORDER BY media_estadia DESC;
+
+-- Top 10 proprietários com mais hospedagens ativas
+SELECT 
+    p.nome AS nome_proprietario,
+    COUNT(h.hospedagem_id) AS total_hospedagem
+FROM
+    hospedagens h
+        JOIN
+    proprietarios p ON p.proprietario_id = h.proprietario_id
+WHERE
+    h.ativo = 1
+GROUP BY p.nome
+ORDER BY total_hospedagem DESC
+LIMIT 10;
+
+-- Proprietários com hospedagens inativas
+SELECT 
+    p.nome AS nome_proprietario,
+    COUNT(h.hospedagem_id) AS total_hospedagem
+FROM
+    hospedagens h
+        JOIN
+    proprietarios p ON p.proprietario_id = h.proprietario_id
+WHERE
+    h.ativo = 0
+GROUP BY p.nome
+ORDER BY total_hospedagem DESC
+;
+
+-- Quantidade de reservas por mês
+SELECT 
+    DATE_FORMAT(data_inicio, '%Y') AS Ano,
+    DATE_FORMAT(data_inicio, '%m') AS Mes,
+    COUNT(*) AS Qtd_reservas
+FROM
+    alugueis
+GROUP BY Ano, Mes
+ORDER BY Ano, Mes;
+
+-- Hospedagens com melhores avaliações
+
+SELECT 
+    *
+FROM
+    avaliacoes
+WHERE
+    nota >= 4;
+
+-- Receita total por mês
+SELECT 
+    DATE_FORMAT(data_inicio, '%Y/%m') AS Anomes,
+    SUM(preco_total) AS Preco_Total
+FROM
+    alugueis
+GROUP BY Anomes
+ORDER BY Anomes;
+
+-- Nota média por hospedagem
+SELECT 
+    hospedagem_id, ROUND(AVG(nota)) AS nota_media
+FROM
+    avaliacoes
+GROUP BY hospedagem_id
+
+-- Hospedagens com nota baixa e alto número de reservas
+SELECT 
+    a.hospedagem_id,
+    COUNT(DISTINCT a.reserva_id) AS total_reservas,
+    ROUND(AVG(av.nota), 2) AS nota_media
+FROM
+    alugueis a
+        JOIN
+    avaliacoes av ON a.hospedagem_id = av.hospedagem_id
+GROUP BY a.hospedagem_id
+HAVING total_reservas >= 5 AND nota_media <= 2
+ORDER BY total_reservas DESC , nota_media ASC
